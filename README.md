@@ -1,6 +1,6 @@
 # Kubernetes hardening with open source tools
 
-[01 - Trivy image scanning](01-tryvi/README.md)
+[01 - Trivy image scanning](01-trivy-image-scanning/README.md)
 
 [02 - Kubescape compliance](02-kubescape-compliance/README.md)
 
