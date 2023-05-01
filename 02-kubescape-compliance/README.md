@@ -1,4 +1,4 @@
-# Kubescape compliance scanning
+# Kubescape compliance/misconfiguration scanning
 
 ## Install Kuberscape
 
