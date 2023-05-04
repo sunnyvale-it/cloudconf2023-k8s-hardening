@@ -65,7 +65,7 @@ Thu May  4 07:04:51 2023: Starting internal webserver, listening on port 8765
 And the pod should be running without any restart
 
 ```console
-$  kubectl get pods
+$  kubectl get pods -n falco
 NAME          READY   STATUS    RESTARTS   AGE
 falco-5mxvd   1/1     Running   0          7m3s
 ```
