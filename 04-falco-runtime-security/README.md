@@ -1,5 +1,7 @@
 # Falco runtime security
 
+Falco is a tool by SysDig that helps you to answer the question "How do I know what is happening during runtime inside these containers?".
+
 ## Prerequisites
 
 This demo runs on a x86 based cluster, thus K8s running on Apple Silicon hardware (aarch64) is not expected to work.
@@ -32,13 +34,35 @@ $ curl -L https://github.com/kubernetes/minikube/releases/download/v0.30.0/docke
 $ minikube start --driver=kvm2 --auto-update-drivers=false
 ```
 
+This is the Minikube VM we setup to run this demo
+
+```console
+$ minikube ssh
+                         _             _            
+            _         _ ( )           ( )           
+  ___ ___  (_)  ___  (_)| |/')  _   _ | |_      __  
+/' _ ` _ `\| |/' _ `\| || , <  ( ) ( )| '_`\  /'__`\
+| ( ) ( ) || || ( ) || || |\`\ | (_) || |_) )(  ___/
+(_) (_) (_)(_)(_) (_)(_)(_) (_)`\___/'(_,__/'`\____)
+
+$ cat /etc/os-release 
+NAME=Buildroot
+VERSION=2021.02.12-1-gf97079d-dirty
+ID=buildroot
+VERSION_ID=2021.02.12
+PRETTY_NAME="Buildroot 2021.02.12"
+
+$ uname -r
+5.10.57
+```
+
 
 ## Deploy Falco on Kubernetes with Helm
 
 ```console
 $ helm repo add falcosecurity https://falcosecurity.github.io/charts
 $ helm repo update
-$ helm install falco falcosecurity/falco -n falco --create-namespace --version 1.11.0
+$ helm upgrade falco falcosecurity/falco --values values.yaml -n falco --create-namespace --version 3.1.4 --install
 ```
 
 Wait a few seconds for the containers to start, then if everything went fine, you should see this in the Falco pod's log:
@@ -46,20 +70,15 @@ Wait a few seconds for the containers to start, then if everything went fine, yo
 
 ```console
 $ kubectl logs falco-5mxvd -n falco
-* Setting up /usr/src links from host
-* Running falco-driver-loader for: falco version=0.28.0, driver version=5c0b863ddade7a45568c0ac97d037422c9efb750
-* Running falco-driver-loader with: driver=module, compile=yes, download=yes
-* Unloading falco module, if present
-* Trying to load a system falco module, if present
-* Success: falco module found and loaded with modprobe
-Thu May  4 07:04:51 2023: Falco version 0.28.0 (driver version 5c0b863ddade7a45568c0ac97d037422c9efb750)
-Thu May  4 07:04:51 2023: Falco initialized with configuration file /etc/falco/falco.yaml
-Thu May  4 07:04:51 2023: Loading rules from file /etc/falco/falco_rules.yaml:
-Thu May  4 07:04:51 2023: Loading rules from file /etc/falco/falco_rules.local.yaml:
-Thu May  4 07:04:51 2023: Starting internal webserver, listening on port 8765
-07:04:51.442418000: Notice Privileged container started (user=root user_loginuid=0 command=container:8ed271a4c832 k8s.ns=<NA> k8s.pod=<NA> container=8ed271a4c832 image=registry.k8s.io/pause:3.9) k8s.ns=<NA> k8s.pod=<NA> container=8ed271a4c832
-07:04:51.459031000: Notice Privileged container started (user=root user_loginuid=0 command=container:4f949b2859a9 k8s.ns=kube-system k8s.pod=kube-proxy-qrrxc container=4f949b2859a9 image=registry.k8s.io/kube-proxy:v1.26.3) k8s.ns=kube-system k8s.pod=kube-proxy-qrrxc container=4f949b2859a9
-07:04:51.474611000: Notice Privileged container started (user=<NA> user_loginuid=0 command=container:9cbe35746215 k8s.ns=<NA> k8s.pod=<NA> container=9cbe35746215 image=registry.k8s.io/pause:3.9) k8s.ns=<NA> k8s.pod=<NA> container=9cbe35746215
+Defaulted container "falco" out of: falco, falcoctl-artifact-follow, falcoctl-artifact-install (init)
+Thu May  4 09:56:34 2023: Falco version: 0.34.1 (x86_64)
+Thu May  4 09:56:34 2023: Falco initialized with configuration file: /etc/falco/falco.yaml
+Thu May  4 09:56:34 2023: Loading rules from file /etc/falco/falco_rules.yaml
+Thu May  4 09:56:34 2023: The chosen syscall buffer dimension is: 8388608 bytes (8 MBs)
+Thu May  4 09:56:34 2023: Starting health webserver with threadiness 2, listening on port 8765
+Thu May  4 09:56:34 2023: Enabled event sources: syscall
+Thu May  4 09:56:34 2023: Opening capture with modern BPF probe.
+Thu May  4 09:56:34 2023: One ring buffer every '2' CPUs.
 ```
 
 And the pod should be running without any restart
@@ -67,6 +86,30 @@ And the pod should be running without any restart
 ```console
 $  kubectl get pods -n falco
 NAME          READY   STATUS    RESTARTS   AGE
-falco-5mxvd   1/1     Running   0          7m3s
+falco-xqzn2   2/2     Running   0          58s
 ```
 
+## Putting Falco to the test
+
+Now that Falco is deployed and running, let’s see if it can detect some suspicious activity.
+
+As containers are not supposed to be interactively accessed, one of the biggest red flags of a compromised container is when a terminal shell spawns.
+
+```console
+$ kubectl run -i --rm --tty busybox --image=busybox --restart=Never -n default -- /bin/sh
+```
+
+In another terminal, if you look in the Falco logs you should see something like:
+
+```console
+$ kubectl logs falco-5mxvd 
+...
+07:28:29.510366389: Notice A shell was spawned in a container with an attached terminal (user=root user_loginuid=-1 k8s.ns=<NA> k8s.pod=<NA> container=4946bb8f2dfb shell=sh parent=<NA> cmdline=sh terminal=34816 container_id=4946bb8f2dfb image=<NA>) k8s.ns=<NA> k8s.pod=<NA> container=4946bb8f2dfb
+```
+
+The container id 4946bb8f2dfb is the one inside our busybox pod:
+
+```console
+$ kubectl describe pod busybox -n default | grep 4946bb8f2dfb
+    Container ID:  docker://4946bb8f2dfb326bf4054ca1463ca71503818e84a8b1394ed9977f01669c74ea
+```
