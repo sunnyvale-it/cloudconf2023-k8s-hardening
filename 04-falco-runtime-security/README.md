@@ -22,10 +22,10 @@ $ curl -LO https://github.com/kubernetes/minikube/releases/download/v1.30.1/mini
 $ sudo install minikube-linux-amd64 /usr/local/bin/minikube
 ```
 
-3) Install kvm2 driver
+3) Manually install kvm2 driver (due to a bug in the latest release)
 
 ```console
-$ curl -L https://github.com/kubernetes/minikube/releases/download/v0.30.0/docker-machine-driver-kvm2 -o /home/$(USER)/.minikube/bin/docker-machine-driver-kvm2
+$ curl -L https://github.com/kubernetes/minikube/releases/download/v0.30.0/docker-machine-driver-kvm2 -o /home/$USER/.minikube/bin/docker-machine-driver-kvm2
 ```
 
 4) Start the Minikube cluster
