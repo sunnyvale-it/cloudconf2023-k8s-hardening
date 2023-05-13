@@ -38,6 +38,12 @@ $  k8sgpt auth
 
 and insert the API key you copied here after at the prompt.
 
+By default, some filters (analyzers) are not enabled, you can add them (i.e.):
+
+```console
+$ k8sgpt filters add HorizontalPodAutoScaler
+```
+
 To analyse the cluster, just type:
 
 ```console

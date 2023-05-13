@@ -8,6 +8,6 @@
 
 [04 - Falco runtime security](04-falco-runtime-security/README.md)
 
-[05 - Quay Container Security](05-quay-container-security/README.md)
+[05 - K8sGPT](05-k8sgpt/README.md)
 
 

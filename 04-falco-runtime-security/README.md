@@ -151,3 +151,4 @@ $ kubectl logs falco-cqt4x -n falco -f
 06:45:21.365557849: Error File below / or /root opened for writing (user=root user_loginuid=-1 command=event-generator run pid=3795 parent=event-generator file=/root/.kube/cache/http/.diskv-temp/1202177541 program=event-generator container_id=2826788a2163 image=falcosecurity/event-generator) k8s.ns=event-generator k8s.pod=event-generator-sn5vp container=2826788a2163
 06:45:21.373296051: Error File below / or /root opened for writing (user=root user_loginuid=-1 command=event-generator run pid=3795 parent=event-generator file=/root/.kube/cache/http/.diskv-temp/582415147 program=event-generator container_id=2826788a2163 image=falcosecurity/event-generator) k8s.ns=event-generator k8s.pod=event-generator-sn5vp container=2826788a2163
 ```
+
