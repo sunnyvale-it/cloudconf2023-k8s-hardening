@@ -48,6 +48,11 @@ To analyse the cluster, just type:
 
 ```console
 $ k8sgpt analyse --explain
+ k8sgpt analyse
+Service kube-system/k8s.io-minikube-hostpath does not exist
+
+0 default/fake-image(fake-image)
+- Error: Back-off pulling image "thisimage/doesnot:exists"
 ```
 
 ## Use in-cluster operator with local AI models
@@ -125,6 +130,20 @@ $ kubectl get pod -l app=k8sgpt-deployment # Shoudl be running
 $ kubectl logs -l app.kubernetes.io/instance=local-ai # Something should happens in the pod's stdout
 ```
 
-kubectl run fake-image --image=thisimage/doesnot:exists
+If an error is found on your cluster (i.e. a Pod stuck in imagePullBackOff), you can retrive informations about how to solve it, using:
+
+```console
+$ kubectl get results
+```
+
+or
+
+```console
+$ kubectl describe result <result name>
+```
+
+k8sgpt enrich the result resource with possibile explanation about how to fix the issue.
+
+
 
 More at https://github.com/k8sgpt-ai/k8sgpt-operator

@@ -31,7 +31,7 @@ $ curl -L https://github.com/kubernetes/minikube/releases/download/v0.30.0/docke
 4) Start the Minikube cluster
 
 ```console
-$ minikube start --driver=kvm2 --auto-update-drivers=false --memory 8192 --cpus 2
+$ minikube start --driver=kvm2 --auto-update-drivers=false --memory 12000 --cpus 4
 ```
 
 This is the Minikube VM we setup to run this demo
