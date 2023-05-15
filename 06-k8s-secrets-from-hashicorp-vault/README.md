@@ -144,16 +144,3 @@ Check if the container sees the variables
 $ kubectl logs -l app=web -c web -n web 
 username=db-readonly-username password=db-secret-password
 ```
-
-The same applies also with CronJobs' pods, let's try:
-
-```console
-$ kubectl apply -f secret_job.yaml -n web
-```
-
-You should be able to read the secret envs from the CronJob's pod as well
-
-```console
-$ kubectl logs -l app=job -c job -n web 
-username=db-readonly-username password=db-secret-password
-```
